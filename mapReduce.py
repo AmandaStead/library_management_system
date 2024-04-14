@@ -32,16 +32,16 @@ class MapReduce:
             "mapReduce": "library_collection",
             "map": map_function,
             "reduce": reduce_function,
-            "out": "checked_out_books_by_city"
+            "out": {"inline": 1}
         })
 
-        result_collection = self.db["checked_out_books_by_city"]
         result_text_content = ""
-        for doc in result_collection.find():
+        for doc in result["results"]:
             result_text_content += str(doc) + "\n"
 
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, result_text_content)
+
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -36,14 +36,15 @@ def generate_book():
 # Function to generate random combined data (user and book info)
 def generate_combined_data():
     user_data = generate_user()
-    book_data = generate_book()
+    books = [generate_book()["name"] for _ in range(user_data["checked_out_books"])]
     combined_data = {
         "user_name": user_data["name"],
         "user_checked_out_books": user_data["checked_out_books"],
         "user_city": user_data["city"],
-        "book_name": book_data["name"]
+        "books": books
     }
     return combined_data
+
 
 
 # Function to insert random data into MongoDB
