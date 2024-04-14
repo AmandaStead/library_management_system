@@ -54,7 +54,7 @@ def insert_random_data():
     label.config(text="data imported successfully")
 
 
-# Function to open a new window for modifying user information and updating checked-out books amount
+# Functions for CRUD Operation Windows
 def open_modify_user_window():
     crud_instance.open_modify_user_window()
 
