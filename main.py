@@ -5,7 +5,6 @@ import tkinter as tk
 from CRUD import CRUD
 from mapReduce import MapReduce
 
-
 # Connect to MongoDB
 client = MongoClient('mongodb://localhost:27017/')
 db = client['library_management']
@@ -13,7 +12,6 @@ collection = db['library_collection']
 
 # Instantiate the CRUD class
 crud_instance = CRUD()
-
 
 
 def generate_user():
@@ -46,7 +44,6 @@ def generate_combined_data():
     return combined_data
 
 
-
 # Function to insert random data into MongoDB
 def insert_random_data():
     random_data = [generate_combined_data() for _ in range(10)]
@@ -71,6 +68,7 @@ def open_create_user_window():
 def open_find_user_window():
     crud_instance.open_find_user_window()
 
+
 def open_map_reduce_window():
     root_map_reduce = tk.Tk()
     root_map_reduce.title("Checked Out Books Per City")
@@ -78,8 +76,6 @@ def open_map_reduce_window():
     map_reduce_instance = MapReduce(root_map_reduce)
 
     root_map_reduce.mainloop()
-
-
 
 
 # GUI for Main Screen: generating data, CRUD operations
@@ -113,6 +109,5 @@ button_find_user.pack()
 
 button_map_reduce = tk.Button(root, text="Checked Out Books Per City", command=open_map_reduce_window)
 button_map_reduce.pack()
-
 
 root.mainloop()
