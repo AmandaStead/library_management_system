@@ -27,11 +27,11 @@ class CRUD:
         try:
             self.collection.insert_one(new_user)
             print("User Created")
-            label.config(text="User created successfully", fg="green")
+            self.error_label.config(text="User created successfully", fg="green")
             return True
         except Exception as e:
             print("Error creating user:", e)
-            label.config(text=f"Error creating user: {e}", fg="red")
+            self.error_label.config(text=f"Error creating user: {e}", fg="red")
             return False
 
     def find_user(self, username):
@@ -167,18 +167,25 @@ class CRUD:
         book_name_entry = tk.Entry(create_user_window)
         book_name_entry.pack()
 
-        global label
-        label = tk.Label(create_user_window, text="")
-        label.pack()
+        self.error_label = tk.Label(create_user_window, text="", fg="red")
+        self.error_label.pack()
 
-        def create_user():
+        def create_user(error_label):
             user_name = username_entry.get()
-            checked_out_books = int(checked_out_books_entry.get())
+            checked_out_books_str = checked_out_books_entry.get()
             city = city_entry.get()
             book_name = book_name_entry.get()
-            self.create_user(user_name, checked_out_books, city, book_name)
 
-        create_button = tk.Button(create_user_window, text="Create User", command=create_user)
+            try:
+                checked_out_books = int(checked_out_books_str)
+                if checked_out_books < 0:raise ValueError(
+                    "Checked Out Books must be a non-negative integer")
+                self.create_user(user_name, checked_out_books, city, book_name)
+                error_label.config(text="User created successfully", fg="green")
+            except ValueError as e:
+                error_label.config(text=f"Error: {e}", fg="red")
+
+        create_button = tk.Button(create_user_window, text="Create User", command=lambda: create_user(self.error_label))
         create_button.pack()
 
     def update_checked_out_books_wrapper(self):
@@ -193,5 +200,10 @@ class CRUD:
         self.delete_user(username)
 
     def create_user_wrapper(self):
-        username = self.username_entry.get()
-        self.create_user(username)
+        self.create_user()
+
+
+if __name__ == "__main__":
+    app = CRUD()
+    app.open_create_user_window()
+    tk.mainloop()
