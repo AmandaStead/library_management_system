@@ -10,6 +10,7 @@ class CRUD:
         self.db = self.client['library_management']
         self.collection = self.db['library_collection']
         self.error_label = None
+        self.update_error_label = None
 
     def delete_user(self, username):
         self.collection.delete_one({"user_name": username})
@@ -48,13 +49,16 @@ class CRUD:
     def update_checked_out_books(self, username, new_amount):
         user_data = self.find_user(username)
         if user_data:
-            # Update document in the MongoDB collection
-            self.collection.update_one({"user_name": username}, {"$set": {"user_checked_out_books": new_amount}})
-            print("Book amount checked out updated successfully.")
-            label.config(text="Update book amount successful", fg="black")
+            try:
+                new_amount = int(new_amount)
+                self.collection.update_one({"user_name": username}, {"$set": {"user_checked_out_books": new_amount}})
+                print("Book amount checked out updated successfully.")
+                self.update_error_label.config(text="Update book amount successful", fg="black")
+            except ValueError:
+                self.update_error_label.config(text="New Book Amount must be an integer", fg="red")
         else:
             print("User not Found.")
-            label.config(text="User not Found", fg="red")
+            self.update_error_label.config(text="User not Found", fg="red")
 
     def open_modify_user_window(self):
         # Function to open modify user window
@@ -76,6 +80,9 @@ class CRUD:
 
         self.new_amount_entry = tk.Entry(modify_user_window)
         self.new_amount_entry.pack()
+
+        self.update_error_label = tk.Label(modify_user_window, text="", fg="red")  #update_error_label
+        self.update_error_label.pack()
 
         # Button to Update Book Amount Checked Out
         update_button = tk.Button(modify_user_window, text="Update Book Amount Checked Out",
@@ -194,8 +201,12 @@ class CRUD:
     def update_checked_out_books_wrapper(self):
         # Wrapper function to get entry values and call update_checked_out_books
         username = self.username_entry.get()
-        new_amount = int(self.new_amount_entry.get())
-        self.update_checked_out_books(username, new_amount)
+        new_amount_str = self.new_amount_entry.get()
+        try:
+            new_amount = int(new_amount_str)
+            self.update_checked_out_books(username, new_amount)
+        except ValueError:
+            self.update_error_label.config(text="New Book Amount must be an integer", fg="red")
 
     def delete_user_wrapper(self):
         # Wrapper function to get entry values and call delete_user
