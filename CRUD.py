@@ -29,6 +29,9 @@ class CRUD:
             print("User Created")
             self.error_label.config(text="User created successfully", fg="green")
             return True
+        except ValueError:
+            self.error_label.config(text="Error: Checked Out Books must be a non-negative integer", fg="red")
+            return False
         except Exception as e:
             print("Error creating user:", e)
             self.error_label.config(text=f"Error creating user: {e}", fg="red")
@@ -183,7 +186,7 @@ class CRUD:
                 self.create_user(user_name, checked_out_books, city, book_name)
                 error_label.config(text="User created successfully", fg="green")
             except ValueError as e:
-                error_label.config(text=f"Error: {e}", fg="red")
+                error_label.config(text="Please enter valid integer", fg="red")
 
         create_button = tk.Button(create_user_window, text="Create User", command=lambda: create_user(self.error_label))
         create_button.pack()
