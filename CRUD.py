@@ -4,6 +4,8 @@ import random
 import tkinter as tk
 
 
+
+
 class CRUD:
     def __init__(self):
         self.client = MongoClient('mongodb://localhost:27017/')
@@ -36,6 +38,9 @@ class CRUD:
         # Update document in the MongoDB collection
         self.collection.update_one({"user_name": username}, {"$set": {"user_checked_out_books": new_amount}})
         print("Book amount checked out updated successfully.")
+        label.config(text="Update book amount successful")
+
+
 
     def open_modify_user_window(self):
         # Function to open modify user window
@@ -66,6 +71,10 @@ class CRUD:
         delete_user_button = tk.Button(modify_user_window, text="Delete User",
                                        command=self.delete_user)
         update_button.pack()
+
+        global label
+        label = tk.Label(modify_user_window, text="")
+        label.pack()
 
     def open_find_user_window(self):
         find_user_window = tk.Toplevel()
@@ -163,6 +172,7 @@ class CRUD:
         username = self.username_entry.get()
         new_amount = int(self.new_amount_entry.get())
         self.update_checked_out_books(username, new_amount)
+
 
     def delete_user_wrapper(self):
         # Wrapper function to get entry values and call delete_user
