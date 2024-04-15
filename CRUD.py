@@ -4,27 +4,35 @@ import random
 import tkinter as tk
 
 
-
-
 class CRUD:
     def __init__(self):
         self.client = MongoClient('mongodb://localhost:27017/')
         self.db = self.client['library_management']
         self.collection = self.db['library_collection']
+        self.error_label = None
 
     def delete_user(self, username):
         self.collection.delete_one({"user_name": username})
         print("User Deleted")
 
     def create_user(self, user_name, checked_out_books, city, book_name):
+
         new_user = {
             "user_name": user_name,
             "user_checked_out_books": checked_out_books,
             "user_city": city,
             "book_name": book_name
         }
-        self.collection.insert_one(new_user)
-        print("User Created")
+
+        try:
+            self.collection.insert_one(new_user)
+            print("User Created")
+            label.config(text="User created successfully", fg="green")
+            return True
+        except Exception as e:
+            print("Error creating user:", e)
+            label.config(text=f"Error creating user: {e}", fg="red")
+            return False
 
     def find_user(self, username):
         user_data = self.collection.find_one({"user_name": username})
@@ -35,12 +43,15 @@ class CRUD:
             return None
 
     def update_checked_out_books(self, username, new_amount):
-        # Update document in the MongoDB collection
-        self.collection.update_one({"user_name": username}, {"$set": {"user_checked_out_books": new_amount}})
-        print("Book amount checked out updated successfully.")
-        label.config(text="Update book amount successful")
-
-
+        user_data = self.find_user(username)
+        if user_data:
+            # Update document in the MongoDB collection
+            self.collection.update_one({"user_name": username}, {"$set": {"user_checked_out_books": new_amount}})
+            print("Book amount checked out updated successfully.")
+            label.config(text="Update book amount successful", fg="black")
+        else:
+            print("User not Found.")
+            label.config(text="User not Found", fg="red")
 
     def open_modify_user_window(self):
         # Function to open modify user window
@@ -156,13 +167,16 @@ class CRUD:
         book_name_entry = tk.Entry(create_user_window)
         book_name_entry.pack()
 
+        global label
+        label = tk.Label(create_user_window, text="")
+        label.pack()
+
         def create_user():
             user_name = username_entry.get()
             checked_out_books = int(checked_out_books_entry.get())
             city = city_entry.get()
             book_name = book_name_entry.get()
             self.create_user(user_name, checked_out_books, city, book_name)
-            create_user_window.destroy()
 
         create_button = tk.Button(create_user_window, text="Create User", command=create_user)
         create_button.pack()
@@ -172,7 +186,6 @@ class CRUD:
         username = self.username_entry.get()
         new_amount = int(self.new_amount_entry.get())
         self.update_checked_out_books(username, new_amount)
-
 
     def delete_user_wrapper(self):
         # Wrapper function to get entry values and call delete_user
