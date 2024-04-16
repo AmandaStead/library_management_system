@@ -3,6 +3,8 @@ from pymongo import MongoClient
 import random
 import tkinter as tk
 
+from utils import generate_book
+
 
 class CRUD:
     def __init__(self):
@@ -13,16 +15,21 @@ class CRUD:
         self.update_error_label = None
 
     def delete_user(self, username):
-        self.collection.delete_one({"user_name": username})
-        print("User Deleted")
+        result = self.collection.delete_one({"user_name": username})
+        if result.deleted_count == 1:
+            print("User Deleted")
+            return True
+        else:
+            print("User not found.")
+            return False
 
-    def create_user(self, user_name, checked_out_books, city, book_name):
-
+    def create_user(self, user_name, checked_out_books, city):
+        books = [generate_book()["name"] for _ in range(checked_out_books)]
         new_user = {
             "user_name": user_name,
             "user_checked_out_books": checked_out_books,
             "user_city": city,
-            "book_name": book_name
+            "books": books
         }
 
         try:
@@ -54,6 +61,10 @@ class CRUD:
                 new_amount = int(new_amount)
                 self.collection.update_one({"user_name": username}, {"$set": {"user_checked_out_books": new_amount}})
                 print("Book amount checked out updated successfully.")
+
+                updated_books = [generate_book()["name"] for _ in range(new_amount)]
+                self.collection.update_one({"user_name": username}, {"$set": {"books": updated_books}})
+
                 self.update_error_label.config(text="Update book amount successful", fg="black")
             except ValueError:
                 self.update_error_label.config(text="New Book Amount must be an integer", fg="red")
@@ -82,7 +93,7 @@ class CRUD:
         self.new_amount_entry = tk.Entry(modify_user_window)
         self.new_amount_entry.pack()
 
-        self.update_error_label = tk.Label(modify_user_window, text="", fg="red")  #update_error_label
+        self.update_error_label = tk.Label(modify_user_window, text="", fg="red")  # update_error_label
         self.update_error_label.pack()
 
         # Button to Update Book Amount Checked Out
@@ -127,24 +138,28 @@ class CRUD:
         find_button.pack()
 
     def open_delete_user_window(self):
-        # Function to open modify user window
         delete_user_window = tk.Toplevel()
         delete_user_window.title("Delete User")
 
         delete_user_window.geometry("400x300")
 
-        # Username Label and Entry
         username_label = tk.Label(delete_user_window, text="Username:")
         username_label.pack()
 
         username_entry = tk.Entry(delete_user_window)
         username_entry.pack()
 
+        result_label = tk.Label(delete_user_window, text="", fg="red")
+        result_label.pack()
+
         # Button to Delete User
         def delete_user():
             username = username_entry.get()
-            self.delete_user(username)
-            delete_user_window.destroy()
+            deleted = self.delete_user(username)
+            if deleted:
+                result_label.config(text="User deleted successfully", fg="green")
+            else:
+                result_label.config(text="User not found", fg="red")
 
         delete_button = tk.Button(delete_user_window, text="Delete User", command=delete_user)
         delete_button.pack()
@@ -173,11 +188,6 @@ class CRUD:
         city_entry = tk.Entry(create_user_window)
         city_entry.pack()
 
-        book_name_label = tk.Label(create_user_window, text="Book Name:")
-        book_name_label.pack()
-        book_name_entry = tk.Entry(create_user_window)
-        book_name_entry.pack()
-
         self.error_label = tk.Label(create_user_window, text="", fg="red")
         self.error_label.pack()
 
@@ -185,13 +195,12 @@ class CRUD:
             user_name = username_entry.get()
             checked_out_books_str = checked_out_books_entry.get()
             city = city_entry.get()
-            book_name = book_name_entry.get()
 
             try:
                 checked_out_books = int(checked_out_books_str)
-                if checked_out_books < 0:raise ValueError(
+                if checked_out_books < 0: raise ValueError(
                     "Checked Out Books must be a non-negative integer")
-                self.create_user(user_name, checked_out_books, city, book_name)
+                self.create_user(user_name, checked_out_books, city)
                 error_label.config(text="User created successfully", fg="green")
             except ValueError as e:
                 error_label.config(text="Please enter valid integer", fg="red")
