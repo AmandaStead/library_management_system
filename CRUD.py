@@ -48,6 +48,7 @@ class CRUD:
 
     def update_checked_out_books(self, username, new_amount):
         user_data = self.find_user(username)
+
         if user_data:
             try:
                 new_amount = int(new_amount)
